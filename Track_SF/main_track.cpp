@@ -39,6 +39,31 @@ struct Camera
 	float x, y;
 };
 
+struct Particle_Vec2D
+{
+	float x, y;
+};
+
+struct Particle_Size
+{
+	int w, h;
+};
+
+struct Particle
+{
+	SDL_Texture *tex;
+	Particle_Vec2D *pos;
+	Particle_Size *size;
+	int particle_arr;
+	int anim_frames;
+	unsigned char *active;
+	unsigned char *current_frame;
+	unsigned int *lifetime;
+	unsigned int *creation_time;
+	unsigned int *last_frame_update;
+	unsigned int anim_speed;
+};
+
 void init_P1(Player *p)
 {
 	//player size, position, and velocity
@@ -56,6 +81,63 @@ void camera_Setup(Player *p, Camera *c)
 {
 	c->x = p->x;
 	c->y = 300.f;
+}
+
+void particle_Init(SDL_Texture *t, Particle *d, int arr_size, int n_frames, int speed)
+{
+	d->tex = t;
+	d->anim_frames = n_frames;
+	d->anim_speed = speed;
+	d->particle_arr = arr_size;
+	d->active = (unsigned char*)malloc(sizeof(unsigned char)*arr_size);
+	d->current_frame = (unsigned char*)malloc(sizeof(unsigned char)*arr_size);
+	d->lifetime = (unsigned int*)malloc(sizeof(unsigned int)*arr_size);
+	d->creation_time = (unsigned int*)malloc(sizeof(unsigned int)*arr_size);
+	d->last_frame_update = (unsigned int*)malloc(sizeof(unsigned int)*arr_size);
+	d->pos = (Particle_Vec2D*)malloc(sizeof(Particle_Vec2D)*arr_size);
+	d->size = (Particle_Size*)malloc(sizeof(Particle_Size)*arr_size);
+
+	for (int i = 0; i < arr_size; i++) d->active[i] = 0;
+}
+
+void create_Particles(Player *p, Particle *d, unsigned int curr_time, int num)
+{
+	for (int i = 0; i < d->particle_arr; i++)
+	{
+		if (d->active[i] == 0)
+		{
+			d->active[i] = 1;
+			d->pos[i] = { p->x, p->y };
+			d->size[i] = { p->w, p->h };
+			d->creation_time[i] = curr_time;
+			d->lifetime[i] = 2000 + rand() % 5000;
+
+			num++;
+			if (num >= 200) num / 2;
+		}
+	}
+}
+
+void update_Particles(Particle *d, unsigned int curr_time)
+{
+	for (int i = 0; i < d->particle_arr; i++)
+	{
+		if (d->active[i] == 1)
+		{
+			if (curr_time - d->creation_time[i] > d->lifetime[i])
+			{
+				d->active[i] = 0;
+				continue;
+			}
+
+			if (curr_time - d->last_frame_update[i] > d->anim_speed)
+			{
+				d->last_frame_update[i] = curr_time;
+				d->current_frame[i]++;
+				d->current_frame[i] %= d->anim_frames;
+			}
+		}
+	}
 }
 
 void draw_P1(SDL_Renderer *renderer, Player *p)
@@ -168,6 +250,20 @@ void draw_Fuel_Block(SDL_Renderer *renderer, Obstacle *o, Camera *c, int x, int 
 	SDL_RenderFillRect(renderer, &rect);
 }
 
+void draw_Dust(SDL_Renderer *renderer, Player *p)
+{
+	//set particle color to dirt
+	SDL_SetRenderDrawColor(renderer, 125, 100, 0, 255);
+	SDL_Rect rect;
+
+	rect.w = 5;
+	rect.h = 5;
+	rect.x = p->x - rand() % 15;
+	rect.y = (p->y + 30) - rand() % 7;
+
+	SDL_RenderFillRect(renderer, &rect);
+}
+
 void draw_Player_Img(SDL_Renderer *renderer, SDL_Texture *t, Player *p, int src_x, int src_y, int src_w, int src_h)
 {
 	//image setup stuff
@@ -190,16 +286,17 @@ void draw_Player_Img(SDL_Renderer *renderer, SDL_Texture *t, Player *p, int src_
 	SDL_RenderCopyEx(renderer, t, &src, &dest, 0, NULL, SDL_FLIP_NONE);
 }
 
-void draw_Obs_Img(SDL_Renderer *renderer, SDL_Texture *t, Obstacle *o, Camera *c, int src_x, int src_y, int src_w, int src_h, int dest_x, int dest_y, int dest_w, int dest_h)
+void draw_Obs_Img(SDL_Renderer *renderer, SDL_Texture *t, Obstacle *o, Camera *c, int src_x, int src_y, int src_w, int src_h, 
+	int dest_x, int dest_y, int dest_w, int dest_h)
 {
 	//image setup stuff
 	SDL_Rect src;
-	SDL_Rect dest;
 	//define rectangle to be copied from the texture (source)
 	src.x = src_x;
 	src.y = src_y;
 	src.w = src_w;
 	src.h = src_h;
+	SDL_Rect dest;
 	//define rectangle to be copied to the screen (destination)
 	dest.x = dest_x - c->x;
 	dest.y = dest_y;
@@ -215,6 +312,31 @@ void draw_Obs_Img(SDL_Renderer *renderer, SDL_Texture *t, Obstacle *o, Camera *c
 	//copy from source texture to destination screen.
 	//SDL_FLIP_XXX enumeration allows you to mirror the image
 	SDL_RenderCopyEx(renderer, t, &src, &dest, 0, NULL, SDL_FLIP_NONE);
+}
+
+void draw_Particle_Img(SDL_Renderer *renderer, Particle *d, int src_x, int src_y, int src_w, int src_h, int num)
+{
+	//image setup stuff
+	SDL_Rect src;
+	//source
+	src.x = src_x;
+	src.y = src_y;
+	src.w = src_w;
+	src.h = src_h;
+	SDL_Rect dest;
+	//destination
+	for (int i = 0; i < num; i++)
+	{
+		dest.x = d->pos[i].x;
+		dest.y = (d->pos[i].y - 16) + rand() % 10;
+		dest.w = d->size[i].w - rand() % 16;
+		dest.h = d->size[i].h - rand() % 16;
+	}
+
+	//draw image
+	//copy from source texture to destination screen.
+	//SDL_FLIP_XXX enumeration allows you to mirror the image
+	SDL_RenderCopyEx(renderer, d->tex, &src, &dest, 0, NULL, SDL_FLIP_NONE);
 }
 
 void draw_Finish_Area(SDL_Renderer *renderer, Obstacle *o, Camera *c)
@@ -322,8 +444,13 @@ int main(int argc, char **argv)
 	const char *player_image_filename = "mt_bikeman_riding.png";
 	//ramp sprite
 	const char *ramp_image_filename = "main_track_ramp.png";
+	//fire sprite
+	const char *fire_image_filename = "ARW_2D_Flame_Sprite_Sheet.png";
+	//smoke sprite
+	const char *smoke_image_filename = "Smoke_n_Fire_Expl.png";
 	//text
 	const char *font_filename = "font_sheet.png";
+
 
 	SDL_Init(SDL_INIT_VIDEO);
 	
@@ -346,6 +473,14 @@ int main(int argc, char **argv)
 	SDL_Surface *ramp_sprite_surface = IMG_Load(ramp_image_filename);
 	assert(ramp_sprite_surface);
 
+	//load fire image
+	SDL_Surface *fire_sprite_surface = IMG_Load(fire_image_filename);
+	assert(fire_sprite_surface);
+
+	//load smoke image
+	SDL_Surface *smoke_sprite_surface = IMG_Load(smoke_image_filename);
+	assert(smoke_sprite_surface);
+
 	//load font sheet image
 	SDL_Surface *font_surface = IMG_Load(font_filename);
 	assert(font_surface);
@@ -356,6 +491,12 @@ int main(int argc, char **argv)
 	//create ramp texture from the surface
 	SDL_Texture *ramp_sprite_texture = SDL_CreateTextureFromSurface(renderer, ramp_sprite_surface);
 
+	//create fire texture from the surface
+	SDL_Texture *fire_sprite_texture = SDL_CreateTextureFromSurface(renderer, fire_sprite_surface);
+
+	//create smoke texture from the surface
+	SDL_Texture *smoke_sprite_texture = SDL_CreateTextureFromSurface(renderer, smoke_sprite_surface);
+
 	//create font texture from the surface
 	SDL_Texture *font_texture = SDL_CreateTextureFromSurface(renderer, font_surface);
 
@@ -364,6 +505,12 @@ int main(int argc, char **argv)
 
 	//free the ramp surface
 	SDL_FreeSurface(ramp_sprite_surface);
+
+	//free the fire surface
+	SDL_FreeSurface(fire_sprite_surface);
+
+	//free the smoke surface
+	SDL_FreeSurface(smoke_sprite_surface);
 
 	//free the font sheet surface
 	SDL_FreeSurface(font_surface);
@@ -402,6 +549,16 @@ int main(int argc, char **argv)
 	int level = 1;
 	int obs_collision = 1;
 
+	//fire stuff
+	int fire_img_source_x = 0;
+	int fire_img_source_w = 24;
+	int fire_sprite_sheet_w = fire_img_source_w * 7;
+
+	//smoke stuff
+	int smoke_img_source_x = 0;
+	int smoke_img_source_w = 16;
+	int smoke_sprite_sheet_w = fire_img_source_w * 4;
+
 	//text stuff
 	char text[17];
 	char text_1[17];
@@ -428,9 +585,17 @@ int main(int argc, char **argv)
 	//gravity stuff
 	Obstacle *aog = (Obstacle*)malloc(sizeof(Obstacle)*n_ramps);
 
+	//particle stuff
+	Particle particles;
+	int n_particles = 100;
+	particle_Init(smoke_sprite_texture, &particles, n_particles, 4, 100);
+	int particle_frame_counter = 0;
+	unsigned int last_particle_frame_time = SDL_GetTicks();
+	unsigned int last_particle_spawn = 0;
+
 	Obstacle finish_line;
 	
-	//set transparency of the texture.
+	//set transparency of the ramp texture.
 	SDL_SetTextureAlphaMod(ramp_sprite_texture, 255);
 
 	for (;;)
@@ -447,8 +612,6 @@ int main(int argc, char **argv)
 			}
 		}
 
-		unsigned int current_time = SDL_GetTicks();
-
 		//sets screen to dirt
 		{
 			//set color to dirt
@@ -457,29 +620,30 @@ int main(int argc, char **argv)
 			SDL_RenderClear(renderer);
 		}
 
+		//if out of lives
+		if (n_lives == 0)
+		{
+			health = 0;
+			gas = 1;
+			draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24);
+		}
+
+		//if out of gas
+		{
+			if (gas <= 0) gas = 0;
+			if (gas == 0) health = 0;
+		}
+
+		unsigned int current_time = SDL_GetTicks();
+
 		//player status
 		previous_player_touch_ramp = player_touch_ramp;
 		prev_in_air = in_air;
+
 		//accel init
 		player.accel_x = 0.01f;
 		if (player.accel_x == 0.01f) gas -= 0.01f;
 		player.accel_y = 0;
-
-		if (n_lives == 0) gas = 1;
-		if (gas <= 0) gas = 0;
-		//if out of gas
-		{
-			if (gas == 0) death_timer++;
-			//respawn at the start 
-			if (death_timer == 200)
-			{
-				death_timer = 0;
-				init_P1(&player);
-				n_lives -= 1;
-				health = 100;
-				gas = 100;
-			}
-		}
 
 		//player movement
 		{
@@ -513,6 +677,8 @@ int main(int argc, char **argv)
 							player.accel_y = 0.02f;
 							gas -= 0.02f;
 						}
+
+						if (health != 0) draw_Dust(renderer, &player);
 					}
 				}
 			}
@@ -520,12 +686,21 @@ int main(int argc, char **argv)
 		
 		//sprite animation
 		{
-			if (current_time - last_frame_update > 100)
+			//update
 			{
-				last_frame_update = current_time;
-				p1_img_source_x += p1_img_source_w;
+				if (current_time - last_frame_update > 100)
+				{
+					last_frame_update = current_time;
+
+					//player
+					p1_img_source_x += p1_img_source_w;
+
+					//fire
+					fire_img_source_x += fire_img_source_w;
+				}
+				if (p1_img_source_x >= sprite_sheet_w) p1_img_source_x = 0;
+				if (fire_img_source_x >= fire_sprite_sheet_w) fire_img_source_x = 0;
 			}
-			if (p1_img_source_x >= sprite_sheet_w) p1_img_source_x = 0;
 		}
 
 		//camera movement
@@ -589,74 +764,74 @@ int main(int argc, char **argv)
 
 				//ramp collision
 				{
-				int ramp_status = obs_Collision(&player, ramp, n_ramps);
+					int ramp_status = obs_Collision(&player, ramp, n_ramps);
 
-				if (player_touch_ramp == 0 && previous_player_touch_ramp == 0 && in_air == 0 && prev_in_air == 0 && on_ground == 1)
-				{
-					//left side (going up ramp)
-					if (ramp_status == 4) stunt = 1;
-					//right side (ramp wall)
-					else if (ramp_status == 2)
+					if (player_touch_ramp == 0 && previous_player_touch_ramp == 0 && in_air == 0 && prev_in_air == 0 && on_ground == 1)
 					{
-						player.vel_x += 0.2f;
-						player_touch_ramp = 0;
+						//left side (going up ramp)
+						if (ramp_status == 4) stunt = 1;
+						//right side (ramp wall)
+						else if (ramp_status == 2)
+						{
+							player.vel_x += 0.2f;
+							player_touch_ramp = 0;
+						}
+						//below
+						else if (ramp_status == 3)
+						{
+							player.vel_y += 0.2f;
+							player_touch_ramp = 0;
+						}
+						//above
+						else if (ramp_status == 1)
+						{
+							player.vel_y += -0.2f;
+							player_touch_ramp = 0;
+						}
 					}
-					//below
-					else if (ramp_status == 3)
-					{
-						player.vel_y += 0.2f;
-						player_touch_ramp = 0;
-					}
-					//above
-					else if (ramp_status == 1)
-					{
-						player.vel_y += -0.2f;
-						player_touch_ramp = 0;
-					}
-				}
 
-				//player movement up ramp
-				{
-					if (stunt == 1)
+					//player movement up ramp
 					{
-						player_touch_ramp = 1;
-						draw_Area_Of_Gravity(renderer, ramp, aog, n_ramps);
+						if (stunt == 1)
+						{
+							player_touch_ramp = 1;
+							draw_Area_Of_Gravity(renderer, ramp, aog, n_ramps);
+						}
+						else player_touch_ramp = 0;
+						if (player_touch_ramp == 1)
+						{
+							player.accel_x += 0.02f;
+							player.accel_y += -0.02f;
+							camera.x = player.x;
+						}
 					}
-					else player_touch_ramp = 0;
-					if (player_touch_ramp == 1)
-					{
-						player.accel_x += 0.02f;
-						player.accel_y += -0.02f;
-						camera.x = player.x;
-					}
-				}
 
-				//area of gravity
-				{
-					int in_area = obs_Collision(&player, aog, n_ramps);
-					if (in_area == 4)
+					//area of gravity
 					{
-						player_touch_ramp = 0;
-						in_air = 1;
-						on_ground = 0;
+						int in_area = obs_Collision(&player, aog, n_ramps);
+						if (in_area == 4)
+						{
+							player_touch_ramp = 0;
+							in_air = 1;
+							on_ground = 0;
+						}
+						//the descent
+						if (in_air == 1)
+						{
+							player.accel_x += -0.005f;
+							player.accel_y += 0.035f;
+							camera.x = player.x;
+							air_time++;
+						}
+						//setting air timer amount to turn off gravity
+						if (air_time == 400)
+						{
+							air_time = 0;
+							in_air = 0;
+							stunt = 0;
+							on_ground = 1;
+						}
 					}
-					//the descent
-					if (in_air == 1)
-					{
-						player.accel_x += -0.005f;
-						player.accel_y += 0.035f;
-						camera.x = player.x;
-						air_time++;
-					}
-					//setting air timer amount to turn off gravity
-					if (air_time == 400)
-					{
-						air_time = 0;
-						in_air = 0;
-						stunt = 0;
-						on_ground = 1;
-					}
-				}
 				}
 			}
 		}
@@ -748,7 +923,7 @@ int main(int argc, char **argv)
 				{
 					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[0], &camera, 0, 0, 370, 232, 400, 300, 64, 64);
 					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[1], &camera, 0, 0, 370, 232, 700, 150, 64, 64);
-					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[2], &camera, 0, 0, 370, 232, 1100, 200, 64, 64);
+					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[2], &camera, 0, 0, 370, 232, 1050, 200, 64, 64);
 				}
 
 				//draw gallons
@@ -771,10 +946,14 @@ int main(int argc, char **argv)
 					//draw_P1(renderer, &player);
 					draw_Player_Img(renderer, player_sprite_texture, &player, p1_img_source_x, 0, p1_img_source_w, 444);
 				}
-				//respawn time if dead
-				else if (health == 0) death_timer++;
+				//respawn time if dead and not out of lives
+				else if (health == 0 && n_lives != 0)
+				{
+					death_timer++;
+					draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24);
+				}
 				//respawn at start
-				if (death_timer == 200)
+				if (death_timer == 1000)
 				{
 					death_timer = 0;
 					n_lives -= 1;
@@ -808,13 +987,35 @@ int main(int argc, char **argv)
 			}
 		}
 
+		//particle system
+		{
+			if (particle_frame_counter++ > 100)
+			{
+				particle_frame_counter = 0;
+				float elapsed = current_time - last_particle_frame_time;
+				last_particle_frame_time = current_time;
+			}
+
+			if (current_time - last_particle_spawn > 100)
+			{
+				last_particle_spawn = current_time;
+				if (health == 0)
+				{
+					create_Particles(&player, &particles, current_time, 50);
+					draw_Particle_Img(renderer, &particles, smoke_img_source_x, 0, smoke_img_source_w, 16, n_particles);
+				}
+			}
+
+			update_Particles(&particles, current_time);
+		}
+
 		//draw labels
 		{
 			draw_Text(renderer, font_texture, text, text_size, 10, 10);
 			draw_Text(renderer, font_texture, text_1, text_size, 300, 10);
 			draw_Text(renderer, font_texture, text_2, text_size, 500, 10);
 		}
-		
+
 		SDL_RenderPresent(renderer);
 	}
 

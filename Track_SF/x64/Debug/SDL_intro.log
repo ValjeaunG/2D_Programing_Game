@@ -1,0 +1,42 @@
+﻿  main_track.cpp
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(116): warning C4552: '/': result of expression not used
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(151): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(152): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(177): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(207): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(208): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(216): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(236): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(261): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(262): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(278): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(279): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(301): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(330): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(331): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(345): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(995): warning C4244: 'initializing': conversion from 'unsigned int' to 'float', possible loss of data
+main_track.obj : error LNK2019: unresolved external symbol SDL_CreateRGBSurfaceWithFormat referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_FreeSurface referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_SetSurfaceBlendMode referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_CreateWindow referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_GetWindowSurface referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_GetKeyboardState referenced in function "void __cdecl `dynamic initializer for 'state''(void)" (??__Estate@@YAXXZ)
+main_track.obj : error LNK2019: unresolved external symbol SDL_PollEvent referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_CreateRenderer referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_CreateTextureFromSurface referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_SetTextureAlphaMod referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_SetRenderDrawColor referenced in function "void __cdecl draw_Area_Of_Gravity(struct SDL_Renderer *,struct Obstacle *,struct Obstacle *,int)" (?draw_Area_Of_Gravity@@YAXPEAUSDL_Renderer@@PEAUObstacle@@1H@Z)
+main_track.obj : error LNK2019: unresolved external symbol SDL_RenderClear referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_RenderDrawLine referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_RenderFillRect referenced in function "void __cdecl draw_Bar(struct SDL_Renderer *,struct Obstacle *,struct Camera *,int,int,int,int)" (?draw_Bar@@YAXPEAUSDL_Renderer@@PEAUObstacle@@PEAUCamera@@HHHH@Z)
+main_track.obj : error LNK2019: unresolved external symbol SDL_RenderCopyEx referenced in function "void __cdecl draw_Obs_Img(struct SDL_Renderer *,struct SDL_Texture *,struct Obstacle *,struct Camera *,int,int,int,int,int,int,int,int)" (?draw_Obs_Img@@YAXPEAUSDL_Renderer@@PEAUSDL_Texture@@PEAUObstacle@@PEAUCamera@@HHHHHHHH@Z)
+main_track.obj : error LNK2019: unresolved external symbol SDL_RenderPresent referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_GetTicks referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol SDL_Init referenced in function SDL_main
+main_track.obj : error LNK2019: unresolved external symbol IMG_Load referenced in function SDL_main
+MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
+SDL2-2.0.8\lib\x86\SDL2.lib : warning LNK4272: library machine type 'x86' conflicts with target machine type 'x64'
+SDL2-2.0.8\lib\x86\SDL2main.lib : warning LNK4272: library machine type 'x86' conflicts with target machine type 'x64'
+SDL2-2.0.8\lib\x86\SDL2_image.lib : warning LNK4272: library machine type 'x86' conflicts with target machine type 'x64'
+C:\Users\VJ\Documents\GitHub\2D_Programing_Game\Track_SF\x64\Debug\SDL_intro.exe : fatal error LNK1120: 20 unresolved externals
