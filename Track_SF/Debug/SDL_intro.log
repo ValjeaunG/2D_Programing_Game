@@ -15,5 +15,5 @@ c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(301): wa
 c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(330): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(331): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(345): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(995): warning C4244: 'initializing': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(1039): warning C4244: 'initializing': conversion from 'unsigned int' to 'float', possible loss of data
   SDL_intro.vcxproj -> C:\Users\VJ\Documents\GitHub\2D_Programing_Game\Track_SF\Debug\SDL_intro.exe

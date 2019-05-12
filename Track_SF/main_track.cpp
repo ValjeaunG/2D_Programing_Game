@@ -359,6 +359,29 @@ void draw_Finish_Area(SDL_Renderer *renderer, Obstacle *o, Camera *c)
 	SDL_RenderFillRect(renderer, &rect);
 }
 
+void draw_FA_Img(SDL_Renderer *renderer, SDL_Texture *t, int src_x, int src_y, int src_w, int src_h,
+	int dest_x, int dest_y, int dest_w, int dest_h)
+{
+	//image setup stuff
+	SDL_Rect src;
+	//define rectangle to be copied from the texture (source)
+	src.x = src_x;
+	src.y = src_y;
+	src.w = src_w;
+	src.h = src_h;
+	SDL_Rect dest;
+	//define rectangle to be copied to the screen (destination)
+	dest.x = dest_x;
+	dest.y = dest_y;
+	dest.w = dest_w;
+	dest.h = dest_h;
+
+	//draw image
+	//copy from source texture to destination screen.
+	//SDL_FLIP_XXX enumeration allows you to mirror the image
+	SDL_RenderCopyEx(renderer, t, &src, &dest, 0, NULL, SDL_FLIP_NONE);
+}
+
 void draw_Area_Of_Gravity(SDL_Renderer *renderer, Obstacle *o, Obstacle *e, int num)
 {
 	for (int i = 0; i < num; i++)
@@ -448,6 +471,8 @@ int main(int argc, char **argv)
 	const char *fire_image_filename = "ARW_2D_Flame_Sprite_Sheet.png";
 	//smoke sprite
 	const char *smoke_image_filename = "Smoke_n_Fire_Expl.png";
+	//finish line sprite
+	const char *finish_image_filename = "Track_FL.png";
 	//text
 	const char *font_filename = "font_sheet.png";
 
@@ -481,6 +506,10 @@ int main(int argc, char **argv)
 	SDL_Surface *smoke_sprite_surface = IMG_Load(smoke_image_filename);
 	assert(smoke_sprite_surface);
 
+	//load finish line image
+	SDL_Surface *finish_sprite_surface = IMG_Load(finish_image_filename);
+	assert(finish_sprite_surface);
+
 	//load font sheet image
 	SDL_Surface *font_surface = IMG_Load(font_filename);
 	assert(font_surface);
@@ -497,6 +526,9 @@ int main(int argc, char **argv)
 	//create smoke texture from the surface
 	SDL_Texture *smoke_sprite_texture = SDL_CreateTextureFromSurface(renderer, smoke_sprite_surface);
 
+	//create finish line texture from the surface
+	SDL_Texture *finish_sprite_texture = SDL_CreateTextureFromSurface(renderer, finish_sprite_surface);
+
 	//create font texture from the surface
 	SDL_Texture *font_texture = SDL_CreateTextureFromSurface(renderer, font_surface);
 
@@ -511,6 +543,9 @@ int main(int argc, char **argv)
 
 	//free the smoke surface
 	SDL_FreeSurface(smoke_sprite_surface);
+
+	//free the finish line surface
+	SDL_FreeSurface(finish_sprite_surface);
 
 	//free the font sheet surface
 	SDL_FreeSurface(font_surface);
@@ -593,10 +628,14 @@ int main(int argc, char **argv)
 	unsigned int last_particle_frame_time = SDL_GetTicks();
 	unsigned int last_particle_spawn = 0;
 
+	//finish line stuff
 	Obstacle finish_line;
+	int finish_img_source_x = 0;
+	int finish_img_source_w = 32;
+	int finish_sprite_sheet_w = fire_img_source_w * 8;
 	
-	//set transparency of the ramp texture.
-	SDL_SetTextureAlphaMod(ramp_sprite_texture, 255);
+	//set transparency of the smoke texture.
+	SDL_SetTextureAlphaMod(smoke_sprite_texture, rand() % 255);
 
 	for (;;)
 	{
@@ -694,12 +733,14 @@ int main(int argc, char **argv)
 
 					//player
 					p1_img_source_x += p1_img_source_w;
-
 					//fire
 					fire_img_source_x += fire_img_source_w;
+					//finish line
+					finish_img_source_x += finish_img_source_w;
 				}
 				if (p1_img_source_x >= sprite_sheet_w) p1_img_source_x = 0;
 				if (fire_img_source_x >= fire_sprite_sheet_w) fire_img_source_x = 0;
+				if (finish_img_source_x >= finish_sprite_sheet_w) finish_img_source_x = 0;
 			}
 		}
 
@@ -902,6 +943,9 @@ int main(int argc, char **argv)
 			//lane 4
 			SDL_RenderDrawLine(renderer, 1, 590, 799, 590);
 		}
+
+		draw_FA_Img(renderer, finish_sprite_texture, finish_img_source_x, 0, finish_img_source_w, 32,
+			finish_line.x - 100, finish_line.y, 600, 600);
 
 		//draw levels
 		{
