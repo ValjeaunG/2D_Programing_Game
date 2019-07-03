@@ -6,11 +6,13 @@ using namespace std;
 //include SDL header
 #include "SDL2-2.0.8\include\SDL.h"
 #include "SDL2-2.0.8\include\SDL_image.h"
+#include "SDL2-2.0.8\include\SDL_mixer.h"
 
 //load libraries
 #pragma comment(lib,"SDL2-2.0.8\\lib\\x86\\SDL2.lib")
 #pragma comment(lib,"SDL2-2.0.8\\lib\\x86\\SDL2main.lib")
 #pragma comment(lib,"SDL2-2.0.8\\lib\\x86\\SDL2_image.lib")
+#pragma comment(lib,"SDL2-2.0.8\\lib\\x86\\SDL2_mixer.lib")
 
 #pragma comment(linker,"/subsystem:console")
 
@@ -264,7 +266,7 @@ void draw_Dust(SDL_Renderer *renderer, Player *p)
 	SDL_RenderFillRect(renderer, &rect);
 }
 
-void draw_Player_Img(SDL_Renderer *renderer, SDL_Texture *t, Player *p, int src_x, int src_y, int src_w, int src_h)
+void draw_Player_Img(SDL_Renderer *renderer, SDL_Texture *t, Player *p, int src_x, int src_y, int src_w, int src_h, float angle)
 {
 	//image setup stuff
 	SDL_Rect src;
@@ -283,7 +285,7 @@ void draw_Player_Img(SDL_Renderer *renderer, SDL_Texture *t, Player *p, int src_
 	//draw image
 	//copy from source texture to destination screen.
 	//SDL_FLIP_XXX enumeration allows you to mirror the image
-	SDL_RenderCopyEx(renderer, t, &src, &dest, 0, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, t, &src, &dest, angle, NULL, SDL_FLIP_NONE);
 }
 
 void draw_Obs_Img(SDL_Renderer *renderer, SDL_Texture *t, Obstacle *o, Camera *c, int src_x, int src_y, int src_w, int src_h, 
@@ -477,7 +479,7 @@ int main(int argc, char **argv)
 	const char *font_filename = "font_sheet.png";
 
 
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	
 	prev_key_state[256];
 	keys = (unsigned char*)SDL_GetKeyboardState(NULL);
@@ -489,6 +491,14 @@ int main(int argc, char **argv)
 
 	renderer = SDL_CreateRenderer(window,
 		-1, SDL_RENDERER_ACCELERATED);
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) std::cout << "Error:" << Mix_GetError() << std::endl;
+
+	//load music
+	Mix_Music *bgm = Mix_LoadMUS("");
+
+	//load sound effect
+	Mix_Chunk *sfx = Mix_LoadWAV("");
 
 	//load player image
 	SDL_Surface *player_sprite_surface = IMG_Load(player_image_filename);
@@ -561,6 +571,7 @@ int main(int argc, char **argv)
 	int n_lives = 3;
 	int health = 100;
 	float gas = 100.f;
+	float degrees = 0.f;
 	Player player;
 	init_P1(&player);
 	Camera camera;
@@ -578,10 +589,12 @@ int main(int argc, char **argv)
 	int time_invun = 0;
 	int death_timer = 0;
 	int at_finish = 0;
+	int going = 0;
 
 	//misc
 	int delay = 0;
 	int level = 1;
+	int clear_prompt = 0;
 	int obs_collision = 1;
 
 	//fire stuff
@@ -598,11 +611,15 @@ int main(int argc, char **argv)
 	char text[17];
 	char text_1[17];
 	char text_2[17];
+	char text_3[17];
+	char text_4[17];
 	int text_size = 20;
 	unsigned int last_text_update = SDL_GetTicks();
 	sprintf(text, "Health");
 	sprintf(text_1, "Lives");
 	sprintf(text_2, "Gas");
+	sprintf(text_3, "Press Space");
+	sprintf(text_4, "GAME OVER");
 
 	//gas block stuff
 	int n_gallons = 7;
@@ -662,9 +679,11 @@ int main(int argc, char **argv)
 		//if out of lives
 		if (n_lives == 0)
 		{
+			clear_prompt = 1;
 			health = 0;
+			going = 0;
 			gas = 1;
-			draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24);
+			draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24, degrees);
 		}
 
 		//if out of gas
@@ -674,25 +693,34 @@ int main(int argc, char **argv)
 		}
 
 		unsigned int current_time = SDL_GetTicks();
-
+		
 		//player status
 		previous_player_touch_ramp = player_touch_ramp;
 		prev_in_air = in_air;
 
 		//accel init
-		player.accel_x = 0.01f;
+		player.accel_x = 0;
+		if (n_lives != 0)
+		{
+			if (state[SDL_SCANCODE_SPACE])
+			{
+				going = 1;
+				clear_prompt = 1;
+			}
+		}
+		if (going == 1) player.accel_x = 0.01f;
 		if (player.accel_x == 0.01f) gas -= 0.01f;
 		player.accel_y = 0;
 
 		//player movement
 		{
-			if (at_finish == 0)
+			if (at_finish == 0 && going == 1)
 			{
 				if (player_touch_ramp == 0 && previous_player_touch_ramp == 0)
 				{
 					if (gas != 0)
 					{
-						//moving left
+						//slowing down
 						if (state[SDL_SCANCODE_A])
 						{
 							player.accel_x = 0.005f;
@@ -841,6 +869,7 @@ int main(int argc, char **argv)
 						else player_touch_ramp = 0;
 						if (player_touch_ramp == 1)
 						{
+							degrees = -45.f;
 							player.accel_x += 0.02f;
 							player.accel_y += -0.02f;
 							camera.x = player.x;
@@ -870,6 +899,7 @@ int main(int argc, char **argv)
 							air_time = 0;
 							in_air = 0;
 							stunt = 0;
+							degrees = 0.f;
 							on_ground = 1;
 						}
 					}
@@ -987,14 +1017,15 @@ int main(int argc, char **argv)
 				//if not dead
 				if (health != 0)
 				{
-					//draw_P1(renderer, &player);
-					draw_Player_Img(renderer, player_sprite_texture, &player, p1_img_source_x, 0, p1_img_source_w, 444);
+					draw_Player_Img(renderer, player_sprite_texture, &player, p1_img_source_x, 0, p1_img_source_w, 444, degrees);
 				}
 				//respawn time if dead and not out of lives
 				else if (health == 0 && n_lives != 0)
 				{
+					going = 0;
+					clear_prompt = 0;
 					death_timer++;
-					draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24);
+					draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24, degrees);
 				}
 				//respawn at start
 				if (death_timer == 1000)
@@ -1058,6 +1089,11 @@ int main(int argc, char **argv)
 			draw_Text(renderer, font_texture, text, text_size, 10, 10);
 			draw_Text(renderer, font_texture, text_1, text_size, 300, 10);
 			draw_Text(renderer, font_texture, text_2, text_size, 500, 10);
+			if (n_lives != 0)
+			{
+				if(clear_prompt == 0) draw_Text(renderer, font_texture, text_3, text_size, 300, 300);
+			}
+			else if (n_lives == 0) draw_Text(renderer, font_texture, text_4, text_size, 300, 300);
 		}
 
 		SDL_RenderPresent(renderer);

@@ -1,19 +1,19 @@
 ﻿  main_track.cpp
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(116): warning C4552: '/': result of expression not used
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(151): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(152): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(177): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(207): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(208): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(216): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(236): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(261): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(262): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(278): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(279): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(301): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(330): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(331): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(345): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(1039): warning C4244: 'initializing': conversion from 'unsigned int' to 'float', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(118): warning C4552: '/': result of expression not used
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(153): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(154): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(179): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(209): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(210): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(218): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(238): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(263): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(264): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(280): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(281): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(303): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(332): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(333): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(347): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vj\documents\github\2d_programing_game\track_sf\main_track.cpp(1070): warning C4244: 'initializing': conversion from 'unsigned int' to 'float', possible loss of data
   SDL_intro.vcxproj -> C:\Users\VJ\Documents\GitHub\2D_Programing_Game\Track_SF\Debug\SDL_intro.exe
