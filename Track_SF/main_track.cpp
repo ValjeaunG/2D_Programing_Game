@@ -588,14 +588,23 @@ int main(int argc, char **argv)
 	int hurt = 0;
 	int time_invun = 0;
 	int death_timer = 0;
+	int game_over_timer = 0;
 	int at_finish = 0;
 	int going = 0;
 
+	//frame rate stuff
+	const int fps = 60;
+	const int frame_delay = 1000 / fps;
+	Uint32 frame_start;
+	int frame_time;
+
 	//misc
 	int delay = 0;
-	int level = 1;
+	int level = -1; //positive numbers = in a level, negative numbers = in a menu 
+	int paused = 0;
+	int game_over = 0;
 	int clear_prompt = 0;
-	int obs_collision = 1;
+	int obs_collision = 0;
 
 	//fire stuff
 	int fire_img_source_x = 0;
@@ -608,18 +617,51 @@ int main(int argc, char **argv)
 	int smoke_sprite_sheet_w = fire_img_source_w * 4;
 
 	//text stuff
-	char text[17];
-	char text_1[17];
-	char text_2[17];
-	char text_3[17];
-	char text_4[17];
+	//g = game, t = title, m = menu
+	char gtext[17];
+	char gtext_1[17];
+	char gtext_2[17];
+	char gtext_3[17];
+	char gtext_4[17];
+	char gtext_5[17];
+	char gtext_6[17];
+	char gtext_7[17];
+	char ttext[17];
+	char ttext_1[17];
+	char ttext_2[17];
+	char ttext_3[17];
+	char ttext_4[17];
+	char mtext[17];
+	char mtext_1[17];
+	char mtext_2[17];
+	char mtext_3[17];
+	char mtext_4[17];
+	char mtext_5[17];
+	char mtext_6[17];
 	int text_size = 20;
+	int title_size = 100;
+	int mtitle_size = 50;
 	unsigned int last_text_update = SDL_GetTicks();
-	sprintf(text, "Health");
-	sprintf(text_1, "Lives");
-	sprintf(text_2, "Gas");
-	sprintf(text_3, "Press Space");
-	sprintf(text_4, "GAME OVER");
+	sprintf(gtext, "Health");
+	sprintf(gtext_1, "Lives");
+	sprintf(gtext_2, "Gas");
+	sprintf(gtext_3, "Press Space");
+	sprintf(gtext_4, "GAME OVER");
+	sprintf(gtext_5, "Paused");
+	sprintf(gtext_6, "Resume [R]");
+	sprintf(gtext_7, "Quit [Q]");
+	sprintf(ttext, "Title");
+	sprintf(ttext_1, "Main Menu");
+	sprintf(ttext_2, "Rules");
+	sprintf(ttext_3, "Controls");
+	sprintf(ttext_4, "Credits");
+	sprintf(mtext, "Press E");
+	sprintf(mtext_1, "Start [W]");
+	sprintf(mtext_2, "Rules [A]");
+	sprintf(mtext_3, "Controls [S]");
+	sprintf(mtext_4, "Credits [D]");
+	sprintf(mtext_5, "Back [B]");
+	sprintf(mtext_6, "Go Back [G]");
 
 	//gas block stuff
 	int n_gallons = 7;
@@ -658,6 +700,8 @@ int main(int argc, char **argv)
 	{
 		memcpy(prev_key_state, keys, 256);
 
+		frame_start = SDL_GetTicks();
+
 		//consume all window events first
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -668,22 +712,100 @@ int main(int argc, char **argv)
 			}
 		}
 
-		//sets screen to dirt
+		//sets screen
 		{
-			//set color to dirt
-			SDL_SetRenderDrawColor(renderer, 100, 75, 0, 100);
-			//clear screen with dirt
+			if (level >= 0)
+			{
+				//set color to dirt if playing a level
+				SDL_SetRenderDrawColor(renderer, 100, 75, 0, 100);
+			}
+			else if (level < 0)
+			{
+				//set color to black if still in menus
+				SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+			}
+			//clear screen
 			SDL_RenderClear(renderer);
 		}
 
-		//if out of lives
-		if (n_lives == 0)
+		//menu stuff
 		{
-			clear_prompt = 1;
-			health = 0;
-			going = 0;
-			gas = 1;
-			draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24, degrees);
+			//title screen
+			if (level == -1)
+			{
+				draw_Text(renderer, font_texture, ttext, title_size, 150, 75);
+				draw_Text(renderer, font_texture, mtext, text_size, 325, 400);
+				if (state[SDL_SCANCODE_E]) level = -2;
+			}
+
+			//main menu screen
+			if (level == -2)
+			{
+				draw_Text(renderer, font_texture, ttext_1, mtitle_size, 150, 75);
+				draw_Text(renderer, font_texture, mtext_1, text_size, 300, 200);
+				draw_Text(renderer, font_texture, mtext_2, text_size, 300, 250);
+				draw_Text(renderer, font_texture, mtext_3, text_size, 300, 300);
+				draw_Text(renderer, font_texture, mtext_4, text_size, 300, 350);
+				draw_Text(renderer, font_texture, mtext_5, text_size, 300, 450);
+				if (state[SDL_SCANCODE_W]) level = 0;
+				if (state[SDL_SCANCODE_A]) level = -3;
+				if (state[SDL_SCANCODE_S]) level = -4;
+				if (state[SDL_SCANCODE_D]) level = -5;
+				if (state[SDL_SCANCODE_B]) level = -1;
+			}
+
+			//rules screen
+			if (level == -3)
+			{
+				draw_Text(renderer, font_texture, ttext_2, mtitle_size, 275, 75);
+				draw_Text(renderer, font_texture, mtext_6, text_size, 50, 550);
+				if (state[SDL_SCANCODE_G]) level = -2;
+			}
+
+			//controls screen
+			if (level == -4)
+			{
+				draw_Text(renderer, font_texture, ttext_3, mtitle_size, 200, 75);
+				draw_Text(renderer, font_texture, mtext_6, text_size, 50, 550);
+				if (state[SDL_SCANCODE_G]) level = -2;
+			}
+
+			//credits screen
+			if (level == -5)
+			{
+				draw_Text(renderer, font_texture, ttext_4, mtitle_size, 200, 75);
+				draw_Text(renderer, font_texture, mtext_6, text_size, 50, 550);
+				if (state[SDL_SCANCODE_G]) level = -2;
+			}
+		}
+
+		//if out of lives
+		{
+			if (n_lives == 0 && level >= 0)
+			{
+				clear_prompt = 1;
+				game_over = 1;
+				health = 0;
+				going = 0;
+				gas = 1;
+				draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24, degrees);
+				//display game over text
+				draw_Text(renderer, font_texture, gtext_4, text_size, 300, 300);
+			}
+			if (game_over == 1) game_over_timer++;
+			//reset player and go back to main menu after a bit
+			if (game_over_timer == 500)
+			{
+				level = -2;
+				init_P1(&player);
+				health = 100;
+				gas = 100;
+				n_lives = 3;
+				game_over = 0;
+				clear_prompt = 0;
+				obs_collision = 0;
+				game_over_timer = 0;
+			}
 		}
 
 		//if out of gas
@@ -700,7 +822,7 @@ int main(int argc, char **argv)
 
 		//accel init
 		player.accel_x = 0;
-		if (n_lives != 0)
+		if (n_lives != 0 && level >= 0)
 		{
 			if (state[SDL_SCANCODE_SPACE])
 			{
@@ -708,13 +830,17 @@ int main(int argc, char **argv)
 				clear_prompt = 1;
 			}
 		}
-		if (going == 1) player.accel_x = 0.01f;
-		if (player.accel_x == 0.01f) gas -= 0.01f;
+		if (going == 1 && paused != 1 && level >= 0)
+		{
+			player.accel_x = 0.1f;
+			obs_collision = 1;
+		}
+		if (player.accel_x == 0.1f) gas -= 0.1f;
 		player.accel_y = 0;
 
 		//player movement
 		{
-			if (at_finish == 0 && going == 1)
+			if (at_finish == 0 && going == 1 && paused != 1 && level >= 0)
 			{
 				if (player_touch_ramp == 0 && previous_player_touch_ramp == 0)
 				{
@@ -723,26 +849,26 @@ int main(int argc, char **argv)
 						//slowing down
 						if (state[SDL_SCANCODE_A])
 						{
-							player.accel_x = 0.005f;
-							gas -= 0.005f;
+							player.accel_x = 0.05f;
+							gas -= 0.05f;
 						}
-						//moving right
+						//speeding up
 						if (state[SDL_SCANCODE_D])
 						{
-							player.accel_x = 0.02f;
-							gas -= 0.02f;
+							player.accel_x = 0.2f;
+							gas -= 0.2f;
 						}
 						//moving up
 						if (state[SDL_SCANCODE_W])
 						{
-							player.accel_y = -0.02f;
-							gas -= 0.02f;
+							player.accel_y = -0.1f;
+							gas -= 0.1f;
 						}
 						//moving down
 						if (state[SDL_SCANCODE_S])
 						{
-							player.accel_y = 0.02f;
-							gas -= 0.02f;
+							player.accel_y = 0.1f;
+							gas -= 0.1f;
 						}
 
 						if (health != 0) draw_Dust(renderer, &player);
@@ -755,7 +881,7 @@ int main(int argc, char **argv)
 		{
 			//update
 			{
-				if (current_time - last_frame_update > 100)
+				if (current_time - last_frame_update > 100 && paused != 1)
 				{
 					last_frame_update = current_time;
 
@@ -792,12 +918,12 @@ int main(int argc, char **argv)
 		
 		//obstacle collision
 		{
-			if (obs_collision == 1)
+			if (obs_collision == 1 && paused != 1)
 			{
 				//gas refill
 				{
 					int gallon_status = obs_Collision(&player, gallon, n_gallons);
-					if (gallon_status != 0) gas += 0.25f;
+					if (gallon_status != 0) gas += 0.5f;
 				}
 
 				//bar collision
@@ -823,7 +949,7 @@ int main(int argc, char **argv)
 					//invincibility timer
 					{
 					    if (hurt == 1) time_invun++;
-					    if (time_invun == 200)
+					    if (time_invun == 20)
 					    {
 						      hurt = 0;
 						      time_invun = 0;
@@ -870,8 +996,8 @@ int main(int argc, char **argv)
 						if (player_touch_ramp == 1)
 						{
 							degrees = -45.f;
-							player.accel_x += 0.02f;
-							player.accel_y += -0.02f;
+							player.accel_x += 0.2f;
+							player.accel_y += -0.2f;
 							camera.x = player.x;
 						}
 					}
@@ -888,13 +1014,13 @@ int main(int argc, char **argv)
 						//the descent
 						if (in_air == 1)
 						{
-							player.accel_x += -0.005f;
-							player.accel_y += 0.035f;
+							player.accel_x += -0.05f;
+							player.accel_y += 0.35f;
 							camera.x = player.x;
 							air_time++;
 						}
 						//setting air timer amount to turn off gravity
-						if (air_time == 400)
+						if (air_time == 40)
 						{
 							air_time = 0;
 							in_air = 0;
@@ -915,14 +1041,14 @@ int main(int argc, char **argv)
 			//slow down
 			if (player.x >= screen_width - 50)
 			{
-				gas += 0.01f;
+				gas += 0.1f;
 				at_finish = 1;
 				player.accel_x = 0.001f;
 			}
 			//respawn at the start
 			{
 				if (at_finish == 1) delay++;
-				if (delay == 2000)
+				if (delay == 100)
 				{
 					init_P1(&player);
 					health = 100;
@@ -930,6 +1056,8 @@ int main(int argc, char **argv)
 					at_finish = 0;
 					level += 1;
 					delay = 0;
+					going = 0;
+					clear_prompt = 0;
 					obs_collision = 0;
 				}
 			}
@@ -962,19 +1090,22 @@ int main(int argc, char **argv)
 
 		//draw lanes
 		{
-			//set line color to white
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			//lane 1
-			SDL_RenderDrawLine(renderer, 1, 140, 799, 140);
-			//lane 2
-			SDL_RenderDrawLine(renderer, 1, 290, 799, 290);
-			//lane 3
-			SDL_RenderDrawLine(renderer, 1, 440, 799, 440);
-			//lane 4
-			SDL_RenderDrawLine(renderer, 1, 590, 799, 590);
+			if (level >= 0)
+			{
+				//set line color to white
+				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+				//lane 1
+				SDL_RenderDrawLine(renderer, 1, 140, 799, 140);
+				//lane 2
+				SDL_RenderDrawLine(renderer, 1, 290, 799, 290);
+				//lane 3
+				SDL_RenderDrawLine(renderer, 1, 440, 799, 440);
+				//lane 4
+				SDL_RenderDrawLine(renderer, 1, 590, 799, 590);
+			}
 		}
 
-		draw_FA_Img(renderer, finish_sprite_texture, finish_img_source_x, 0, finish_img_source_w, 32,
+		if (level >= 0) draw_FA_Img(renderer, finish_sprite_texture, finish_img_source_x, 0, finish_img_source_w, 32,
 			finish_line.x - 100, finish_line.y, 600, 600);
 
 		//draw levels
@@ -1011,8 +1142,8 @@ int main(int argc, char **argv)
 
 		//draw player 
 		{
-			//if not out of lives
-			if (n_lives != 0)
+			//if not out of lives and not in menus
+			if (n_lives != 0 && level >= 0)
 			{
 				//if not dead
 				if (health != 0)
@@ -1023,13 +1154,13 @@ int main(int argc, char **argv)
 				else if (health == 0 && n_lives != 0)
 				{
 					going = 0;
-					clear_prompt = 0;
 					death_timer++;
 					draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24, degrees);
 				}
 				//respawn at start
-				if (death_timer == 1000)
+				if (death_timer == 100)
 				{
+					clear_prompt = 0;
 					death_timer = 0;
 					n_lives -= 1;
 					init_P1(&player);
@@ -1039,13 +1170,16 @@ int main(int argc, char **argv)
 			}
 		}
 		
-		draw_Health_Bar(renderer, health);
+		if (level >= 0)
+		{
+			draw_Health_Bar(renderer, health);
 
-		draw_Fuel_Bar(renderer, gas);
+			draw_Fuel_Bar(renderer, gas);
+		}
 		
 		//draw player lives
 		{
-			if (n_lives != 0)
+			if (n_lives != 0 && level >= 0)
 			{
 				if (n_lives == 3)
 				{
@@ -1086,17 +1220,49 @@ int main(int argc, char **argv)
 
 		//draw labels
 		{
-			draw_Text(renderer, font_texture, text, text_size, 10, 10);
-			draw_Text(renderer, font_texture, text_1, text_size, 300, 10);
-			draw_Text(renderer, font_texture, text_2, text_size, 500, 10);
-			if (n_lives != 0)
+			if (level >= 0)
 			{
-				if(clear_prompt == 0) draw_Text(renderer, font_texture, text_3, text_size, 300, 300);
+				draw_Text(renderer, font_texture, gtext, text_size, 10, 10);
+				draw_Text(renderer, font_texture, gtext_1, text_size, 300, 10);
+				draw_Text(renderer, font_texture, gtext_2, text_size, 500, 10);
 			}
-			else if (n_lives == 0) draw_Text(renderer, font_texture, text_4, text_size, 300, 300);
+		}
+
+		//game prompt and pause menu
+		{
+			if (n_lives != 0 && level >= 0)
+			{
+				if (clear_prompt == 0) draw_Text(renderer, font_texture, gtext_3, text_size, 300, 300);
+				if (state[SDL_SCANCODE_P]) paused = 1;
+				if (paused == 1)
+				{
+					draw_Text(renderer, font_texture, gtext_5, mtitle_size, 250, 200);
+					draw_Text(renderer, font_texture, gtext_6, text_size, 300, 300);
+					draw_Text(renderer, font_texture, gtext_7, text_size, 325, 350);
+
+					//resume
+					if (state[SDL_SCANCODE_R]) paused = 0;
+					//quit
+					if (state[SDL_SCANCODE_Q])
+					{
+						paused = 0;
+						level = -2;
+						init_P1(&player);
+						health = 100;
+						gas = 100;
+						going = 0;
+						n_lives = 3;
+						clear_prompt = 0;
+						obs_collision = 0;
+					}
+				}
+			}
 		}
 
 		SDL_RenderPresent(renderer);
+
+		frame_time = SDL_GetTicks() - frame_start;
+		if (frame_delay > frame_time) SDL_Delay(frame_delay - frame_time);
 	}
 
 	return 0;
