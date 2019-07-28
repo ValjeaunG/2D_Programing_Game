@@ -79,9 +79,9 @@ void init_P1(Player *p)
 	p->accel_y = 0;
 }
 
-void camera_Setup(Player *p, Camera *c)
+void camera_Setup(Camera *c)
 {
-	c->x = p->x;
+	c->x = 0.f;
 	c->y = 300.f;
 }
 
@@ -142,19 +142,19 @@ void update_Particles(Particle *d, unsigned int curr_time)
 	}
 }
 
-void draw_P1(SDL_Renderer *renderer, Player *p)
-{
-	//set player color to blue
-	SDL_SetRenderDrawColor(renderer, 0, 100, 255, 255);
-	SDL_Rect rect;
-
-	rect.w = p->w;
-	rect.h = p->h;
-	rect.x = p->x;
-	rect.y = p->y;
-
-	SDL_RenderFillRect(renderer, &rect);
-}
+//void draw_P1(SDL_Renderer *renderer, Player *p)
+//{
+//	//set player color to blue
+//	SDL_SetRenderDrawColor(renderer, 0, 100, 255, 255);
+//	SDL_Rect rect;
+//
+//	rect.w = p->w; 
+//	rect.h = p->h;
+//	rect.x = p->x;
+//	rect.y = p->y;
+//
+//	SDL_RenderFillRect(renderer, &rect);
+//}
 
 void draw_Health_Bar(SDL_Renderer *renderer, int hp)
 {
@@ -341,10 +341,10 @@ void draw_Particle_Img(SDL_Renderer *renderer, Particle *d, int src_x, int src_y
 	SDL_RenderCopyEx(renderer, d->tex, &src, &dest, 0, NULL, SDL_FLIP_NONE);
 }
 
-void draw_Finish_Area(SDL_Renderer *renderer, Obstacle *o, Camera *c)
+void draw_Finish_Area(SDL_Renderer *renderer, Obstacle *o, Camera *c, int distance)
 {
 	//set position and size
-	o->x = 1500 - c->x;
+	o->x = distance - c->x;
 	o->y = 0;
 	o->w = 100;
 	o->h = 600;
@@ -389,7 +389,7 @@ void draw_Area_Of_Gravity(SDL_Renderer *renderer, Obstacle *o, Obstacle *e, int 
 	for (int i = 0; i < num; i++)
 	{
 		//aog position and size
-		e[i].x = o[i].x + (o[i].w + 30);
+		e[i].x = o[i].x + (o[i].w + 15);
 		e[i].y = o[i].y - 65;
 		e[i].w = o[i].w;
 		e[i].h = o[i].h * 2;
@@ -575,7 +575,7 @@ int main(int argc, char **argv)
 	Player player;
 	init_P1(&player);
 	Camera camera;
-	camera_Setup(&player, &camera);
+	camera_Setup(&camera);
 
 	//player states
 	unsigned int last_frame_update = SDL_GetTicks();
@@ -679,6 +679,14 @@ int main(int argc, char **argv)
 	//gravity stuff
 	Obstacle *aog = (Obstacle*)malloc(sizeof(Obstacle)*n_ramps);
 
+	//finish line stuff
+	int meters_away = 9999;
+	int n_finishes = 1;
+	Obstacle *finish_line = (Obstacle*)malloc(sizeof(Obstacle)*n_finishes); //theres something wrong here
+	int finish_img_source_x = 0;
+	int finish_img_source_w = 32;
+	int finish_sprite_sheet_w = fire_img_source_w * 8;
+
 	//particle stuff
 	Particle particles;
 	int n_particles = 100;
@@ -686,12 +694,6 @@ int main(int argc, char **argv)
 	int particle_frame_counter = 0;
 	unsigned int last_particle_frame_time = SDL_GetTicks();
 	unsigned int last_particle_spawn = 0;
-
-	//finish line stuff
-	Obstacle finish_line;
-	int finish_img_source_x = 0;
-	int finish_img_source_w = 32;
-	int finish_sprite_sheet_w = fire_img_source_w * 8;
 	
 	//set transparency of the smoke texture.
 	SDL_SetTextureAlphaMod(smoke_sprite_texture, rand() % 255);
@@ -793,11 +795,12 @@ int main(int argc, char **argv)
 				draw_Text(renderer, font_texture, gtext_4, text_size, 300, 300);
 			}
 			if (game_over == 1) game_over_timer++;
-			//reset player and go back to main menu after a bit
+			//reset player and camera and go back to main menu after a bit
 			if (game_over_timer == 500)
 			{
 				level = -2;
 				init_P1(&player);
+				camera_Setup(&camera);
 				health = 100;
 				gas = 100;
 				n_lives = 3;
@@ -815,7 +818,7 @@ int main(int argc, char **argv)
 		}
 
 		unsigned int current_time = SDL_GetTicks();
-		
+
 		//player status
 		previous_player_touch_ramp = player_touch_ramp;
 		prev_in_air = in_air;
@@ -832,10 +835,10 @@ int main(int argc, char **argv)
 		}
 		if (going == 1 && paused != 1 && level >= 0)
 		{
-			player.accel_x = 0.1f;
+			player.accel_x += 0.05f;
 			obs_collision = 1;
 		}
-		if (player.accel_x == 0.1f) gas -= 0.1f;
+		if (player.accel_x == 0.05f) gas -= 0.05f;
 		player.accel_y = 0;
 
 		//player movement
@@ -849,25 +852,27 @@ int main(int argc, char **argv)
 						//slowing down
 						if (state[SDL_SCANCODE_A])
 						{
-							player.accel_x = 0.05f;
+							player.accel_x = -0.1f;
 							gas -= 0.05f;
 						}
 						//speeding up
 						if (state[SDL_SCANCODE_D])
 						{
 							player.accel_x = 0.2f;
-							gas -= 0.2f;
+							gas -= 0.05f;
 						}
 						//moving up
 						if (state[SDL_SCANCODE_W])
 						{
-							player.accel_y = -0.1f;
+							player.accel_y = -0.15f;
+							player.accel_x = 0.075f;
 							gas -= 0.1f;
 						}
 						//moving down
 						if (state[SDL_SCANCODE_S])
 						{
-							player.accel_y = 0.1f;
+							player.accel_y = 0.15f;
+							player.accel_x = 0.075f;
 							gas -= 0.1f;
 						}
 
@@ -896,12 +901,6 @@ int main(int argc, char **argv)
 				if (fire_img_source_x >= fire_sprite_sheet_w) fire_img_source_x = 0;
 				if (finish_img_source_x >= finish_sprite_sheet_w) finish_img_source_x = 0;
 			}
-		}
-
-		//camera movement
-		{
-			//moving left or right
-			if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_D] || player.accel_x > 0) camera.x = player.x;
 		}
 
 		//bounds collision
@@ -996,9 +995,8 @@ int main(int argc, char **argv)
 						if (player_touch_ramp == 1)
 						{
 							degrees = -45.f;
-							player.accel_x += 0.2f;
-							player.accel_y += -0.2f;
-							camera.x = player.x;
+							player.accel_x += 0.1f;
+							player.accel_y += -0.25f;
 						}
 					}
 
@@ -1014,13 +1012,12 @@ int main(int argc, char **argv)
 						//the descent
 						if (in_air == 1)
 						{
-							player.accel_x += -0.05f;
-							player.accel_y += 0.35f;
-							camera.x = player.x;
+							player.accel_x += -0.1f;
+							player.accel_y += 0.5f;
 							air_time++;
 						}
 						//setting air timer amount to turn off gravity
-						if (air_time == 40)
+						if (air_time == 30)
 						{
 							air_time = 0;
 							in_air = 0;
@@ -1033,24 +1030,26 @@ int main(int argc, char **argv)
 			}
 		}
 
-		//stuff
+		//stuff...seriously, don't mess with this
+		//it breaks stuff when deleted and idk why
 		{}
 		
 		//player reached finish area
 		{
 			//slow down
-			if (player.x >= screen_width - 50)
+			if (player.x >= finish_line[0].x)
 			{
 				gas += 0.1f;
 				at_finish = 1;
 				player.accel_x = 0.001f;
 			}
-			//respawn at the start
+			//respawn at the start and reset camera
 			{
 				if (at_finish == 1) delay++;
 				if (delay == 100)
 				{
 					init_P1(&player);
+					camera_Setup(&camera);
 					health = 100;
 					gas = 100;
 					at_finish = 0;
@@ -1063,7 +1062,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		//update player
+		//update player speed
 		{
 			if (n_lives != 0)
 			{
@@ -1072,8 +1071,8 @@ int main(int argc, char **argv)
 					if (gas != 0)
 					{
 						//friction
-						player.vel_x *= 0.9f;
-						player.vel_y *= 0.9f;
+						player.vel_x *= 0.94f;
+						player.vel_y *= 0.94f;
 						//speed
 						player.vel_x += player.accel_x;
 						player.vel_y += player.accel_y;
@@ -1085,8 +1084,6 @@ int main(int argc, char **argv)
 		}
 
 		draw_Cam(renderer, &camera);
-
-		draw_Finish_Area(renderer, &finish_line, &camera);
 
 		//draw lanes
 		{
@@ -1105,41 +1102,44 @@ int main(int argc, char **argv)
 			}
 		}
 
+		draw_Finish_Area(renderer, finish_line, &camera, meters_away);
+
 		if (level >= 0) draw_FA_Img(renderer, finish_sprite_texture, finish_img_source_x, 0, finish_img_source_w, 32,
-			finish_line.x - 100, finish_line.y, 600, 600);
+			finish_line[0].x - 100, finish_line[0].y, 600, 600);
 
 		//draw levels
 		{
-			if (level == 1)
+			if (level == 0)
 			{
+				//when level starts or is in progress and not paused
+				if (going == 1 && paused != 1 && health != 0 && camera.x <= finish_line[0].x + 100)
+				{
+					//set camera speed
+					for (int accel_time = 0; accel_time < 1000; accel_time++) camera.x += 0.001f;
+				}
+
 				//draw obstacles
 				{
-					draw_Bar(renderer, &bar[0], &camera, 400, 450, 5, 150);
-					draw_Bar(renderer, &bar[1], &camera, 500, 325, 100, 5);
-					draw_Bar(renderer, &bar[2], &camera, 250, 250, 5, 100);
-					draw_Bar(renderer, &bar[3], &camera, 600, 10, 5, 150);
-					draw_Bar(renderer, &bar[4], &camera, 825, 100, 5, 125);
-					draw_Bar(renderer, &bar[5], &camera, 1000, 300, 5, 300);
-					draw_Bar(renderer, &bar[6], &camera, 1400, 50, 5, 250);
-					draw_Bar(renderer, &bar[7], &camera, 1200, 400, 200, 5);
+					draw_Bar(renderer, &bar[0], &camera, 300, 475, 5, 125);
+					draw_Bar(renderer, &bar[1], &camera, 1000, 300, 5, 300);
 				}
 
 				//draw ramps
 				{
-					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[0], &camera, 0, 0, 370, 232, 400, 300, 64, 64);
-					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[1], &camera, 0, 0, 370, 232, 700, 150, 64, 64);
-					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[2], &camera, 0, 0, 370, 232, 1050, 200, 64, 64);
+					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[0], &camera, 0, 0, 370, 232, 500, 300, 64, 64);
+					draw_Obs_Img(renderer, ramp_sprite_texture, &ramp[1], &camera, 0, 0, 370, 232, 1050, 200, 64, 64);
 				}
 
 				//draw gallons
 				{
-					draw_Fuel_Block(renderer, &gallon[0], &camera, 750, 350, 20, 20);
-					draw_Fuel_Block(renderer, &gallon[1], &camera, 600, 200, 20, 20);
-					draw_Fuel_Block(renderer, &gallon[2], &camera, 1300, 300, 20, 20);
+					//draw_Fuel_Block(renderer, &gallon[0], &camera, 750, 350, 20, 20);
 				}
+
+				//set finish line distance
+				meters_away = 1500;
 			}
 		}
-
+		
 		//draw player 
 		{
 			//if not out of lives and not in menus
@@ -1157,7 +1157,7 @@ int main(int argc, char **argv)
 					death_timer++;
 					draw_Player_Img(renderer, fire_sprite_texture, &player, fire_img_source_x, 0, fire_img_source_w, 24, degrees);
 				}
-				//respawn at start
+				//respawn at start and reset camera
 				if (death_timer == 100)
 				{
 					clear_prompt = 0;
@@ -1166,14 +1166,15 @@ int main(int argc, char **argv)
 					init_P1(&player);
 					health = 100;
 					gas = 100;
+					camera_Setup(&camera);
 				}
 			}
 		}
 		
+		//draw health and gas when in level
 		if (level >= 0)
 		{
 			draw_Health_Bar(renderer, health);
-
 			draw_Fuel_Bar(renderer, gas);
 		}
 		
@@ -1233,7 +1234,7 @@ int main(int argc, char **argv)
 			if (n_lives != 0 && level >= 0)
 			{
 				if (clear_prompt == 0) draw_Text(renderer, font_texture, gtext_3, text_size, 300, 300);
-				if (state[SDL_SCANCODE_P]) paused = 1;
+				if (state[SDL_SCANCODE_P] && going != 0) paused = 1;
 				if (paused == 1)
 				{
 					draw_Text(renderer, font_texture, gtext_5, mtitle_size, 250, 200);
@@ -1248,6 +1249,7 @@ int main(int argc, char **argv)
 						paused = 0;
 						level = -2;
 						init_P1(&player);
+						camera_Setup(&camera);
 						health = 100;
 						gas = 100;
 						going = 0;
