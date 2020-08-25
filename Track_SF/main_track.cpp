@@ -989,12 +989,12 @@ int main(int argc, char **argv)
 						if (stunt == 1)
 						{
 							player_touch_ramp = 1;
-							draw_Area_Of_Gravity(renderer, ramp, aog, n_ramps);
+							draw_Area_Of_Gravity(renderer, ramp, aog, n_ramps); //SDL_RenderFillRect commented out in function
 						}
 						else player_touch_ramp = 0;
 						if (player_touch_ramp == 1)
 						{
-							degrees = -45.f;
+							degrees = -45.f; //player rotation
 							player.accel_x += 0.1f;
 							player.accel_y += -0.25f;
 						}

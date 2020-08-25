@@ -1,0 +1,20 @@
+﻿  main_track.cpp
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(118): warning C4552: '/': result of expression not used
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(179): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(209): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(210): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(218): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(238): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(263): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(264): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(280): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(281): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(303): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(332): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(333): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(347): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\vjgen\onedrive\documents\gamedev_portfolio\2d_programing_game\track_sf\main_track.cpp(1205): warning C4244: 'initializing': conversion from 'unsigned int' to 'float', possible loss of data
+  Generating code
+  All 35 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  SDL_intro.vcxproj -> C:\Users\vjgen\OneDrive\Documents\GameDev_Portfolio\2D_Programing_Game\Track_SF\Release\SDL_intro.exe
